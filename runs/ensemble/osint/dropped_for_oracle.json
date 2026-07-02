@@ -1,0 +1,93 @@
+{
+  "purpose": "OSINT features dropped from the ensemble by Gate 2 (temporal leakage). They stay in the Z matrices; Step 2 should feed them to the LLM oracle as contextual hints, never as ensemble-training features.",
+  "features": [
+    {
+      "feature": "wayback_n_snapshots",
+      "reason": "gate-1: AUC_kp=0.9960 \u2265 0.99",
+      "AUC_kp": 0.9959809956373633,
+      "AUC_dp": 0.5042336890162977,
+      "AUC_pp": 0.914352986982921,
+      "gap": 0.4917473066210656
+    },
+    {
+      "feature": "wayback_first_status_ok",
+      "reason": "gate-1: AUC_kp=0.9937 \u2265 0.99",
+      "AUC_kp": 0.9937189686046214,
+      "AUC_dp": 0.5038342092689919,
+      "AUC_pp": 0.8459707036799293,
+      "gap": 0.48988475933562947
+    },
+    {
+      "feature": "wayback_active_window_days",
+      "reason": "gate-1: AUC_kp=0.9937 \u2265 0.99",
+      "AUC_kp": 0.9937078004293741,
+      "AUC_dp": 0.5004010913172404,
+      "AUC_pp": 0.8994620063349084,
+      "gap": 0.4933067091121337
+    },
+    {
+      "feature": "wayback_first_seen_days",
+      "reason": "gate-1: AUC_kp=0.9934 \u2265 0.99",
+      "AUC_kp": 0.9933860825277522,
+      "AUC_dp": 0.5024718638849073,
+      "AUC_pp": 0.9289209960468208,
+      "gap": 0.4909142186428449
+    },
+    {
+      "feature": "wayback_last_seen_days",
+      "reason": "gate-1: AUC_kp=0.9931 \u2265 0.99",
+      "AUC_kp": 0.9931041233300103,
+      "AUC_dp": 0.5017636262977877,
+      "AUC_pp": 0.8542426522429996,
+      "gap": 0.4913404970322226
+    },
+    {
+      "feature": "dns_resolved",
+      "reason": "gate-2: AUC_kp=0.9874 \u2265 0.95 \u2227 cross-dataset gap=0.482 > 0.4",
+      "AUC_kp": 0.9874022983211205,
+      "AUC_dp": 0.5053608399881693,
+      "AUC_pp": 0.609631971994514,
+      "gap": 0.4820414583329512
+    },
+    {
+      "feature": "asn_number",
+      "reason": "gate-2: AUC_kp=0.9872 \u2265 0.95 \u2227 cross-dataset gap=0.482 > 0.4",
+      "AUC_kp": 0.9871692060946271,
+      "AUC_dp": 0.5053549624978196,
+      "AUC_pp": 0.6655520946237463,
+      "gap": 0.48181424359680747
+    },
+    {
+      "feature": "is_in_tranco_1m",
+      "reason": "gate-2: AUC_kp=0.9622 \u2265 0.95 \u2227 cross-dataset gap=0.461 > 0.4",
+      "AUC_kp": 0.9622186587746219,
+      "AUC_dp": 0.5008327076650059,
+      "AUC_pp": 0.6543512155938362,
+      "gap": 0.461385951109616
+    },
+    {
+      "feature": "tranco_rank",
+      "reason": "gate-2: AUC_kp=0.9622 \u2265 0.95 \u2227 cross-dataset gap=0.462 > 0.4",
+      "AUC_kp": 0.9622093023255813,
+      "AUC_dp": 0.5001335707081049,
+      "AUC_pp": 0.6546812025802649,
+      "gap": 0.4620757316174764
+    },
+    {
+      "feature": "tranco_rank_log",
+      "reason": "gate-2: AUC_kp=0.9622 \u2265 0.95 \u2227 cross-dataset gap=0.462 > 0.4",
+      "AUC_kp": 0.9622093023255813,
+      "AUC_dp": 0.5001335707081049,
+      "AUC_pp": 0.6546812025802649,
+      "gap": 0.4620757316174764
+    },
+    {
+      "feature": "asn_age_days",
+      "reason": "gate-2: AUC_kp=0.9619 \u2265 0.95 \u2227 cross-dataset gap=0.455 > 0.4",
+      "AUC_kp": 0.9619085805934242,
+      "AUC_dp": 0.5064748140058699,
+      "AUC_pp": 0.5747409562694896,
+      "gap": 0.4554337665875543
+    }
+  ]
+}

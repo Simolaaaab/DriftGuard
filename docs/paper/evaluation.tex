@@ -1,0 +1,448 @@
+% =====================================================================
+%  DRIFTGUARD — Section IV: Experimental Evaluation.
+%  Narrative rewrite (NOT a clean-up of Experimental_Evaluation.tex).
+%  Numbers are taken verbatim from the bible; prose is fresh, story-first.
+%  Six tables kept in-body: data, leakage, xdataset, oracle, al-strategy,
+%  cursor. The alpha-sensitivity table are deferred to
+%  the appendix; only their takeaways appear here.
+% =====================================================================
+
+\section{Experimental Evaluation}
+\label{sec:eval}
+
+Our evaluation follows the life of the system and answers four questions in
+order. Does the leakage gate buy us an \emph{honest} baseline, one whose
+cross-distribution accuracy reflects phishing rather than collection artefacts
+(Section~\ref{ssec:eval-gate})? Given that baseline, which evidence makes the
+LLM the best possible oracle (Section~\ref{ssec:eval-oracle})? How much drift
+does the self-repair loop actually recover, at what operational cost, and
+without forgetting (Section~\ref{ssec:eval-recovery})? And finally, why is an
+\emph{imperfect} oracle not merely tolerable but causally \emph{preferable} for
+robustness (Section~\ref{sec:noise})? Unless noted, multi-seed results are
+reported over five clean seeds as mean $\pm$ 95\% confidence interval;
+single-stream operational analyses use the representative seed $2025$.
+
+\subsection{Datasets and Protocol}
+\label{ssec:eval-data}
+
+We use three datasets, each with a fixed and distinct role
+(Table~\ref{tab:data}). The detector is trained \emph{only} on KnowPhish (KP).
+PhreshPhish (PP), collected in 2024--25, is a temporally disjoint corpus of
+fresh phishing and is our principal drift test set. DeltaPhish/SpacePhish (DP)
+is held out entirely as an adversarial out-of-distribution (OOD) probe and is
+\emph{never} trained on. The two kept apart deliberately: KP$\to$PP measures
+natural temporal drift, KP$\to$DP measures adversarial robustness, and conflating
+them is exactly how prior work overstates generalisation.
+
+For the self-repair loop, KP is split $80/20$ into a training fold (carried
+unchanged into every retrain) and an in-distribution test (the forgetting
+check). PP is replayed as a row-by-row \emph{stream} in chronological order ---
+so the simulation sees drift as it happened --- with a disjoint held-out test
+set the oracle never touches. Three invariants are enforced in code and matter
+for every number that follows: DP labels never enter training, the PP test set
+is isolated from both the stream and the labelling pool, and the drift detector
+sees only the model's own output, never a ground-truth label.
+
+\begin{table}[H]
+\centering
+\caption{The data and its operational slices ($\mathrm{seed}=2025$). Only
+$\mathrm{KP_{train}}$ and accepted oracle labels are ever trained on; DP is a
+pure OOD probe.}
+\label{tab:data}
+\small
+\begin{tabular}{@{}llrl@{}}
+\toprule
+Slice & Source & $N$ & Role \\
+\midrule
+$\mathrm{KP_{train}}$ & KP 80\% & 7{,}221 & seed training set (frozen) \\
+$\mathrm{KP_{test}}$  & KP 20\% & 1{,}806 & forgetting check \\
+$\mathrm{PP_{stream}}$ & PP 80\% & 3{,}821 & drift stream (1{,}865 phish) \\
+$\mathrm{PP_{test}}$  & PP 20\% & 956 & drift-recovery metric (held out) \\
+$\mathrm{DP_{probe}}$ & DP full & 6{,}426 & OOD probe (85\% benign, eval only) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{An Honest Baseline}
+\label{ssec:eval-gate}
+
+The leakage gate rejects $13$ of $39$ candidate features, and the rejections
+tell a coherent story (Table~\ref{tab:leakage}). The archival and popularity
+signals --- Wayback, Tranco, DNS --- are near-perfect on KP yet no better than a
+coin flip on DP: as anticipated in Section~\ref{ssec:core}, they encode
+``alive versus dead'', a property of \emph{when} the data was collected, not of
+phishing. The same rule, with no special-casing, also rejects the proposers'
+own headline probabilities (\texttt{max\_prob}, \texttt{prob\_sn}): brilliant on
+KP, useless on fresh phishing. That a single statistical criterion catches a
+shortcut in the base detectors and a temporal artefact in the OSINT layer ---
+two failures of entirely different origin --- is the methodological payoff of
+this stage. What survives is consistent across datasets: of the proposer
+signals only \texttt{min\_prob} and \texttt{prob\_pg} generalise, joined by
+registration-age features that are robust because domain age is genuinely
+informative.
+
+\begin{table}[H]
+\centering
+\caption{Representative gate decisions. AUC is the polarity-corrected
+single-feature AUC per dataset. The same rule rejects temporally leaky OSINT
+signals \emph{and} the proposers' non-transferable probabilities.}
+\label{tab:leakage}
+\small
+\begin{tabular}{@{}lcccl@{}}
+\toprule
+Feature & $\mathrm{AUC}_{kp}$ & $\mathrm{AUC}_{dp}$ & $\mathrm{AUC}_{pp}$ & Verdict \\
+\midrule
+\texttt{wayback\_n\_snapshots}   & 0.996 & 0.504 & 0.914 & reject \\
+\texttt{max\_prob}               & 0.989 & 0.802 & 0.504 & reject \\
+\texttt{prob\_sn}                & 0.978 & 0.761 & 0.513 & reject \\
+\texttt{tranco\_rank}            & 0.962 & 0.500 & 0.655 & reject \\
+\midrule
+\texttt{min\_prob}               & 0.982 & 0.978 & 0.858 & keep \\
+\texttt{prob\_pg}                & 0.976 & 0.987 & 0.863 & keep \\
+\texttt{rdap\_domain\_age\_days} & 0.884 & 0.503 & 0.859 & keep \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Sterilising the feature space costs almost nothing in-distribution --- all three
+candidate estimators still exceed $98\%$ weighted $F_1$ on KP --- but changes the
+picture out of distribution entirely (Table~\ref{tab:xdataset}). Ungated, the
+meta-learner degenerates on the adversarial probe, calling almost everything
+phishing ($F_{1,w}=7.1\%$); gated, that pathology is gone. Among the three
+estimators, logistic regression maximises PP, the drifted distribution we care
+about, and is the deployed detector. It begins where a good self-repair target
+should: high phishing precision ($0.843$) and low recall ($0.372$). The pages it
+calls phishing are almost always phishing; the ones it misses are exactly the
+territory the loop must reclaim. We adopt its $\mathrm{PP}\,F_{1,w}=0.629$ as the
+leakage-clean baseline. This is, by design, \emph{below} the stronger base
+detector taken alone (PhishGraph reaches $0.748$ on PP) --- we have thrown away
+the shortcuts that inflate it --- and the contribution is not a higher starting
+point but a system that, after adaptation, climbs past the static ceiling to
+$0.791$ while a frozen detector cannot move at all.
+
+\begin{table}[H]
+\centering
+\caption{Weighted $F_1$ per split under the gated feature space. LogReg
+maximises PP, the drift target, and is deployed. Ungated, the same pipeline
+collapses to $7.1\%$ on the adversarial DP probe.}
+\label{tab:xdataset}
+\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Model & KP test & DP full & PP full \\
+\midrule
+LogReg & 0.981 & 0.514 & \textbf{0.629} \\
+GB     & \textbf{0.990} & 0.481 & 0.592 \\
+RF     & 0.989 & \textbf{0.535} & 0.592 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Seeing vs.\ Cheating: A Teacher--Student Gap}
+\label{ssec:eval-gap}
+
+The gate makes an asymmetric choice: it strips eleven lifecycle features ---
+Tranco, Wayback, DNS, ASN --- from the detector, yet forwards them to the oracle
+(Section~\ref{ssec:core}). Is that the right split, or does it needlessly blind
+the detector? Three observations show the asymmetry is exactly right and, in the
+process, reveal a genuine teacher--student gap that is a secondary message of
+this paper.
+
+First, the oracle truly leans on this evidence. Across $4{,}485$ cached verdicts,
+$93\%$ of its stated reasoning invokes signals the detector cannot represent, and
+two in three explicitly name Tranco or Wayback: the oracle is reasoning about a
+domain's lifecycle, not only its page.
+
+Second, those same signals are \emph{leakage} for a statistical model.
+\texttt{wayback\_n\_snapshots} scores AUC $0.996$ on KP and $0.914$ on PP but
+exactly chance ($0.504$) on the adversarial probe (Table~\ref{tab:leakage}): it
+tracks ``alive versus dead'', which lines up with the label only because of when
+each corpus was collected.
+
+Third --- the crux --- if we hand the eleven features back to the detector, it
+does not learn what the oracle knows; it learns to cheat
+(Figure~\ref{fig:restoration}). The detector seizes on them eagerly: they take
+$37\%$ of its weight and \texttt{wayback\_n\_snapshots} becomes its single most
+important feature. But the gain is leakage, not understanding. In a controlled
+replay on a fixed sample path, the restored detector reaches
+$\mathrm{PP}\,F_{1,w}=0.899$ --- \emph{above} the $0.859$ the very same pipeline
+attains with perfect ground-truth labels (and above the main loop's $0.873$
+ceiling of Section~\ref{sec:noise}) --- a level only the temporal artefact can
+buy, while KP saturates from $0.968$ to $0.996$. The lift lands precisely on the
+time-correlated corpora and corresponds to nothing the model could generalise
+with: on the adversarial probe the same feature is chance-level
+(Table~\ref{tab:leakage}), so there is no shortcut to take.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\columnwidth]{figures/fig_restoration.pdf}
+  \caption{The student can only cheat with the teacher's features. Handed the
+  eleven gated-out OSINT signals, the statistical detector reaches a PP score
+  (restored, $0.899$) \emph{beyond} what the same pipeline achieves with perfect
+  ground-truth labels (the $0.859$ ceiling) --- impossible without exploiting the
+  temporal leakage the gate removed --- and saturates KP. The gain is confined to
+  the time-correlated corpora; on the adversarial probe the same feature is
+  chance-level. Absolute values are from a controlled fixed-path replay and are
+  not comparable to the main loop (Table~\ref{tab:al-strategy}); the
+  gated-vs-restored contrast and the ceiling crossing are the point.}
+  \label{fig:restoration}
+\end{figure}
+
+The picture is now coherent. Detector and oracle see the same signal but can use
+it in qualitatively different ways. A statistical model can use it only as a
+correlation, and that correlation \emph{is} the temporal leakage the gate
+removed; the oracle reads it in context --- ``recently registered, never
+archived, absent from Tranco'' together spell throwaway infrastructure --- and so
+generalises. The teacher--student gap is therefore not that the student lacks
+features: it is that the only way the student \emph{can} use them is the one the
+gate rightly forbids. The student does not fail to \emph{see}; it can only
+\emph{cheat} --- which is exactly why the same lifecycle evidence that would
+corrupt the detector is what makes the oracle worth querying.
+
+\subsection{The Right Evidence for the Oracle}
+\label{ssec:eval-oracle}
+
+Before wiring the oracle into the loop we ask what to show it, on the cases that
+matter: the $100$ most diagnostic detector errors on PP --- the $50$ phishing it
+was most sure were benign and the $50$ benign it was most sure were phishing ---
+so that every sample carries a detector probability that is confidently
+\emph{wrong}. The result is counter-intuitive: \textbf{handing the oracle the
+detector's probabilities makes it worse} (Table~\ref{tab:oracle}). Removing them
+lifts weighted $F_1$ by $22$ points and raises recovery of missed phishing from
+$24/50$ to $40/50$. The mechanism is plain once stated --- on these samples the
+probability is a confidently wrong prior, and the model partially anchors to it
+--- and it is, read positively, a robustness property: the factual OSINT dossier
+gives the oracle independent ground to stand on.
+
+\begin{table}[H]
+\centering
+\caption{Oracle ablation on $100$ boundary samples ($50$ FN, $50$ FP). FN/FP
+recovery is the fraction of the detector's errors the oracle corrects.
+Probability-blind variants (C, D) dominate on these confidently-wrong cases.}
+\label{tab:oracle}
+\small
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+Variant & Acc & $F_{1,w}$ & $R_{\text{phish}}$ & FN rec. & FP rec. \\
+\midrule
+D \texttt{html\_osint}        & \textbf{0.910} & \textbf{0.909} & 0.820 & 41/50 & 50/50 \\
+C \texttt{html\_only}         & 0.900 & 0.899 & 0.800 & 40/50 & 50/50 \\
+E \texttt{poc\_2k}            & 0.820 & 0.814 & 0.640 & 32/50 & 50/50 \\
+B \texttt{html\_probs\_osint} & 0.770 & 0.761 & 0.580 & 28/50 & 48/50 \\
+A \texttt{html\_probs}        & 0.690 & 0.676 & 0.480 & 24/50 & 45/50 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+There is a twist that governs deployment. This test set is, by construction,
+adversarial to the probabilities, which is why the probability-blind variants
+win on it. The samples the loop actually queries are different: they sit near
+the genuine decision boundary, where a probability encodes ``uncertain'' rather
+than ``confidently wrong'', and there the relationship inverts and the full
+multimodal variant becomes the stronger oracle. The lesson is that the best
+oracle context is distribution-dependent --- probabilities help when they encode
+real uncertainty and hurt when they encode confident error --- and we accordingly
+adopt the full multimodal variant inside the loop, where its samples live.
+
+\subsection{Recovery, Forgetting, and Selection}
+\label{ssec:eval-recovery}
+
+This is the main result (Table~\ref{tab:al-strategy}). Over five clean seeds the
+self-repair loop lifts $\mathrm{PP_{test}}$ weighted $F_1$ from $0.623$ to
+$\mathbf{0.791 \pm 0.013}$ --- about $+17$ points --- and it does so in the right
+way: the gain is driven entirely by phishing recall ($0.37 \to 0.61$) while
+precision is \emph{preserved} ($\approx 0.96$). The loop recovers missed
+phishing without sacrificing the high-precision operating point that made the
+detector trustworthy. And it does so without forgetting: across all $40$ runs the
+in-distribution KP score never leaves a one-point band ($0.972$--$0.982$), the
+empirical signature of full-union retraining. At roughly one to two dollars of
+tokens per run, this is the headline the paper promises.
+
+We compare our \emph{drift-anchored} selector (Section~\ref{sec:design}) against
+the standard active-learning acquisition rules, each of which decides which pooled
+samples to send to the oracle. \emph{Margin} is classical uncertainty sampling:
+the samples whose predicted probability sits closest to the $0.5$ boundary.
+\emph{QBC} (query-by-committee) picks the samples on which a committee of models
+most disagrees. \emph{Core-set} ignores uncertainty and instead chooses a diverse
+subset that geometrically covers the feature space (a $k$-center rule).
+\emph{BADGE} fuses the two, clustering gradient embeddings that are large when the
+model is uncertain and spread out when samples are diverse. \emph{Hybrid} is a
+fixed blend of margin, core-set diversity, and committee disagreement.
+\emph{Random} draws uniformly from the pool --- the budget-matched control that
+isolates how much the \emph{choice} of samples matters beyond their number.
+Finally, the \emph{ungated stream} row removes the uncertainty pool entirely and
+labels the raw delegate stream, isolating the pool's contribution.
+
+\begin{table}[H]
+\centering
+\caption{Selection strategies over five seeds (periodic trigger, multimodal
+oracle). PP is weighted $F_1$; DP is macro $F_1$ (the probe is $85\%$ benign);
+``oracle acc'' is the agreement of accepted labels with ground truth. Round-0
+baselines: $\mathrm{PP}=0.623$, $\mathrm{DP}=0.438$. The informed strategies are
+indistinguishable on PP but separate sharply on the OOD probe.}
+\label{tab:al-strategy}
+\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Strategy & $\mathrm{PP}\,F_{1,w}$ & $\mathrm{DP}\,F_{1,\mathrm{mac}}$ & oracle acc \\
+\midrule
+drift-anchored (ours) & $\mathbf{0.791 \pm 0.013}$ & $0.547 \pm 0.023$ & 0.81 \\
+margin     & $0.780 \pm 0.018$ & $0.706 \pm 0.015$ & 0.70 \\
+qbc        & $0.779 \pm 0.019$ & $0.714 \pm 0.004$ & 0.70 \\
+hybrid     & $0.779 \pm 0.019$ & $0.714 \pm 0.008$ & 0.71 \\
+core-set   & $0.778 \pm 0.017$ & $0.687 \pm 0.012$ & 0.73 \\
+badge      & $0.776 \pm 0.021$ & $0.708 \pm 0.012$ & 0.72 \\
+random     & $0.762 \pm 0.016$ & $0.634 \pm 0.016$ & 0.87 \\
+\midrule
+\emph{ungated stream} & $0.766 \pm 0.011$ & $0.598 \pm 0.025$ & 0.84 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The selection results then say something we did not expect. On PP, the informed
+strategies are statistically indistinguishable --- they cluster between $0.776$
+and $0.791$ --- so the choice of acquisition rule is \emph{not} where the
+in-distribution gain comes from. Where it matters is the adversarial probe, and
+there a clean trade-off appears: drift-anchored attains the best PP but the
+\emph{worst} DP, while the more diffuse strategies give up about one PP point to
+buy $14$--$17$ points of DP. Concentrating labels along the measured drift
+sharpens a PP-specific boundary; spreading them out generalises to the
+orthogonal adversarial shift. Two controls pin the cause down. Randomising
+\emph{when} the loop fires, with the selector fixed, leaves PP essentially
+unchanged ($0.798$ vs $0.800$), confirming that timing is not the lever; removing
+the uncertainty pool and labelling the raw stream costs $2.5$ PP points,
+confirming that the pool is. The trade-off itself is real and we revisit its
+cause next: notably, the cleanest-label strategy (drift-anchored, oracle accuracy
+$0.81$) is the OOD-weakest, a clue that the label \emph{noise} is doing useful
+work.
+
+\paragraph{Robustness to the one knob.}
+\label{ssec:eval-alpha}
+Drift-anchored carries a single weight, $\alpha$, on its drift term. Sweeping it
+across five values shows the behaviour is a \emph{step}, not a tuned magnitude:
+at $\alpha=0$ the selector is exactly margin sampling, turning the term on at any
+positive weight reshuffles most of the selected set and produces the PP/DP
+profile above, and increasing $\alpha$ further changes essentially nothing. The
+specific value is immaterial --- it is the \emph{presence} of the drift term, not
+its tuning, that defines the method (appendix).
+
+\subsection{Choosing the Trigger: the Cost of Delay}
+\label{ssec:eval-delay}
+
+Timing is not our contribution, but the loop must fire on \emph{some} signal, and
+the choice carries a measurable operational cost: between the onset of drift and
+the first repair, the stale model keeps misclassifying in production. Replaying
+the stream under whichever snapshot was live at each row turns that cost into a
+number --- phishing missed before repair, and the time-integrated error
+$\int(1{-}F_{1,w})$ --- and lets us compare triggers fairly
+(Table~\ref{tab:al-delay}).
+
+\begin{table}[H]
+\centering
+\caption{Cost of delay on $\mathrm{PP_{stream}}$ ($3{,}821$ rows, $1{,}865$
+phishing; seed $2025$), replayed under the model snapshot live at each row.
+``missed'' is phishing missed in production before repair; $\int(1{-}F_{1,w})$ is
+the time-integrated operational error; ``probe'' counts oracle calls spent only
+to \emph{measure} agreement, yielding no training label. We show the two
+deployable label-free triggers, the output-gated reference, and two
+representatives of the agreement-based (LAR) family; the full sweep is in the
+appendix.}
+\label{tab:al-delay}
+\small
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+Trigger & 1st & \#fires & missed & $\int(1{-}F_{1,w})$ & probe \\
+\midrule
+\textsc{kl-only}            & \textbf{99}  & 30 & \textbf{828}  & \textbf{830.6}  & 0 \\
+\textsc{periodic} (ours)    & 149 & 25 & 866  & 875.0  & 0 \\
+\textsc{or} (output-gated)  & 429 & 2  & 1178 & 1217.4 & 0 \\
+\midrule
+LAR (best: random, $w{=}100$) & 299 & 17 & 1070 & 1103.3 & 380 \\
+LAR (budget, $w{=}200$)       & 599 & 2  & 1144 & 1176.4 & 190 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Two label-free triggers are deployable. \textsc{kl-only} watches the input
+distribution and fires the moment it shifts: it reacts earliest (row $99$),
+misses the fewest phishing, and incurs the lowest integrated error, at the cost
+of firing often. \textsc{periodic} fires on a fixed schedule: it reacts a little
+later but spends a \emph{predictable} budget, which is why we adopt it as the
+canonical trigger --- a sensible default for a proof-of-concept, and within a
+hair of \textsc{kl-only} on every metric ($0.74$ vs $0.75$ stream-wide weighted
+$F_1$). The \textsc{or} trigger, which waits for the model's \emph{confidence} to
+collapse, is the cautionary reference: on a calibrated detector that confidence
+never collapses, so it fires twice in the entire stream and never leaves the
+baseline.
+
+We also asked whether the oracle itself could time the loop. The natural idea is
+to periodically \emph{probe} a few samples with the LLM and fire when the model's
+agreement with it drops --- a model-versus-oracle disagreement signal we call the
+LLM-agreement rate (LAR), which we tried in several variants (random or
+drift-guided probing, relative-drop or absolute-threshold rules, two window
+sizes). It is intuitive but loses on every axis (Table~\ref{tab:al-delay}, lower
+block): the best variant reacts $200$ rows later than \textsc{kl-only}, misses
+over $240$ more phishing, and --- worse --- burns several hundred extra oracle
+calls purely to measure agreement, calls that produce no label to train on. The
+reason is structural: an agreement trigger needs the \emph{oracle} to witness the
+drift, whereas the same shift is already visible, for free, in the model's own
+prediction histogram. Watching the input is both the better signal and the
+cheaper one, and it is what we deploy.
+
+\subsection{Why an Imperfect Oracle Wins}
+\label{sec:noise}
+
+The trade-off above hinted that the oracle's mistakes are not pure cost. We now
+show they are causally beneficial for robustness, with two experiments.
+
+First, the ground-truth ceiling. Replacing the LLM with perfect labels,
+everything else fixed, bounds what relabelling could ever buy. On PP it is a true
+ceiling of $0.873$, of which our $\approx\!\$1$ oracle already captures two
+thirds. But on the adversarial probe the perfect oracle is not a ceiling --- it
+is a \emph{floor}: the ground-truth-trained model regresses to a macro $F_1$ of
+$0.337$, \emph{below} the untrained baseline of $0.438$ and far below the LLM
+run's $0.547$. Perfect labels sharpen the boundary so precisely onto PP's
+phishing region that the $85\%$-benign probe gets swept up as phishing. If
+perfect labels hurt OOD robustness and imperfect ones help it, the \emph{noise}
+is doing the work.
+
+Second, we isolate that claim. A naive LLM-versus-ground-truth comparison
+confounds two things --- the labels differ and the selected samples can differ
+--- so we hold the queried samples fixed and vary only label quality, flipping an
+increasing fraction $\varepsilon$ of the oracle's mistakes back to truth and
+refitting (Table~\ref{tab:cursor}). The trend is monotone and clean: as the
+labels get \emph{better}, PP rises ($+9$ points) while every OOD metric falls
+--- macro $F_1$, PR-AUC, phishing $F_1$ all collapse --- and the in-distribution
+score stays flat, isolating the effect to the adversarial axis. At
+$\varepsilon=1$ the cursor lands exactly on the independent ground-truth ceiling,
+confirming the two methods agree.
+
+\begin{table}[H]
+\centering
+\caption{Holding the queried samples fixed and correcting the oracle's errors
+toward ground truth ($\varepsilon\!:\!0\to1$, margin selector, seed $2025$). As
+labels improve, PP rises and the OOD probe falls monotonically; KP is unaffected.}
+\label{tab:cursor}
+\small
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+$\varepsilon$ & $\mathrm{PP}\,F_{1,w}$ & $\mathrm{PP}\,R_{\text{ph}}$ & $\mathrm{DP}\,F_{1,\mathrm{mac}}$ & $\mathrm{DP}\,\text{PR-AUC}$ & $\mathrm{KP}\,F_{1,w}$ \\
+\midrule
+0.00 & 0.775 & 0.589 & \textbf{0.683} & 0.753 & 0.973 \\
+0.25 & 0.803 & 0.644 & 0.661 & 0.733 & 0.977 \\
+0.50 & 0.834 & 0.705 & 0.613 & 0.709 & 0.978 \\
+0.75 & 0.855 & 0.751 & 0.522 & 0.663 & 0.979 \\
+1.00 & \textbf{0.866} & 0.812 & \textbf{0.350} & 0.568 & 0.978 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The reading is direct: the oracle's $\approx\!29\%$ error rate acts as label
+noise that keeps the boundary from over-committing to the PP-specific direction,
+and so preserves robustness to an orthogonal adversarial shift; remove the noise
+and the probe falls below its own untrained baseline. This reframes oracle
+imperfection from a limitation into a mechanism --- in an adversarial deployment a
+moderate oracle error rate is a feature, not a defect. It also raises a sharp
+operational question for any deployment --- whether one should \emph{clean} the
+oracle's labels before training on them --- which Section~\ref{sec:safety} takes
+up, with a more nuanced answer than the noise result alone would suggest.

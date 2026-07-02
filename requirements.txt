@@ -1,0 +1,3 @@
+numpy pandas scikit-learn matplotlib seaborn joblib bs4 lxml
+aiohttp tenacity tldextract pyyaml shap
+openai  # per Azure AI Foundry gateway o DeepSeek

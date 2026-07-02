@@ -1,0 +1,195 @@
+{
+  "partA": [
+    {
+      "target": "llm",
+      "features": "gated",
+      "n_feats": 26,
+      "agreement_acc": 0.8237347294938918,
+      "f1w": 0.8230383908498496
+    },
+    {
+      "target": "llm",
+      "features": "restored",
+      "n_feats": 37,
+      "agreement_acc": 0.8568935427574171,
+      "f1w": 0.8572247485668778
+    },
+    {
+      "target": "gt",
+      "features": "gated",
+      "n_feats": 26,
+      "agreement_acc": 0.8987783595113438,
+      "f1w": 0.8987863916754097
+    },
+    {
+      "target": "gt",
+      "features": "restored",
+      "n_feats": 37,
+      "agreement_acc": 0.9389179755671903,
+      "f1w": 0.9389011860274765
+    }
+  ],
+  "partB": [
+    {
+      "features": "gated",
+      "label_src": "llm",
+      "n_feats": 26,
+      "PP_test_f1w": 0.8501486753590787,
+      "DP_macro": 0.39740185669597233,
+      "KP_test_f1w": 0.9683950679423403,
+      "LLM_agreement_heldout": 0.7595330739299611
+    },
+    {
+      "features": "restored",
+      "label_src": "llm",
+      "n_feats": 37,
+      "PP_test_f1w": 0.8988306985658674,
+      "DP_macro": 0.5045707866158557,
+      "KP_test_f1w": 0.9961251418892969,
+      "LLM_agreement_heldout": 0.8249027237354085
+    },
+    {
+      "features": "gated_gt_ceiling",
+      "label_src": "gt",
+      "n_feats": 26,
+      "PP_test_f1w": 0.8587552162067029,
+      "DP_macro": 0.29613575236999745,
+      "KP_test_f1w": 0.9694995704905893,
+      "LLM_agreement_heldout": 0.7673151750972763
+    }
+  ],
+  "restored_importance_top": [
+    {
+      "feature": "wayback_n_snapshots",
+      "abs_coef": 1.0378942455372044,
+      "pct": 14.415436344054216,
+      "hidden": true
+    },
+    {
+      "feature": "prob_pg",
+      "abs_coef": 0.6513877576567145,
+      "pct": 9.047201866830262,
+      "hidden": false
+    },
+    {
+      "feature": "rdap_age_risk",
+      "abs_coef": 0.639795238330859,
+      "pct": 8.886191990219382,
+      "hidden": false
+    },
+    {
+      "feature": "sn_pg_agreement",
+      "abs_coef": 0.5929495449761298,
+      "pct": 8.235546595997494,
+      "hidden": false
+    },
+    {
+      "feature": "rdap_domain_age_days",
+      "abs_coef": 0.5846006338177044,
+      "pct": 8.119587578145776,
+      "hidden": false
+    },
+    {
+      "feature": "domain_entropy",
+      "abs_coef": 0.3018518881579377,
+      "pct": 4.192456695644475,
+      "hidden": false
+    },
+    {
+      "feature": "tranco_rank_log",
+      "abs_coef": 0.2753878682106151,
+      "pct": 3.8248947820884807,
+      "hidden": true
+    },
+    {
+      "feature": "wayback_last_seen_days",
+      "abs_coef": 0.27152981194975534,
+      "pct": 3.7713097808426,
+      "hidden": true
+    },
+    {
+      "feature": "dns_resolved",
+      "abs_coef": 0.247457422583245,
+      "pct": 3.4369655082403305,
+      "hidden": true
+    },
+    {
+      "feature": "is_in_tranco_1m",
+      "abs_coef": 0.23207430795861245,
+      "pct": 3.2233076036915858,
+      "hidden": true
+    },
+    {
+      "feature": "tranco_rank",
+      "abs_coef": 0.21245023933755366,
+      "pct": 2.9507465858088784,
+      "hidden": true
+    },
+    {
+      "feature": "cert_validity_median_days",
+      "abs_coef": 0.20839820749085994,
+      "pct": 2.894467434632103,
+      "hidden": false
+    },
+    {
+      "feature": "n_external_links_ratio",
+      "abs_coef": 0.19971010190017277,
+      "pct": 2.77379730505821,
+      "hidden": false
+    },
+    {
+      "feature": "cert_issuer_diversity",
+      "abs_coef": 0.16362143173944074,
+      "pct": 2.27255748252279,
+      "hidden": false
+    },
+    {
+      "feature": "cert_first_seen_days",
+      "abs_coef": 0.14895610010098848,
+      "pct": 2.068868951049017,
+      "hidden": false
+    }
+  ],
+  "hidden_coef_share_pct": 36.851731709214114,
+  "gated_feats": [
+    "min_prob",
+    "prob_pg",
+    "rdap_has_registrar",
+    "rdap_domain_age_days",
+    "rdap_age_risk",
+    "domain_length",
+    "domain_entropy",
+    "n_dots_domain",
+    "n_subdomains",
+    "html_length",
+    "sn_pg_diff",
+    "has_https",
+    "n_password_inputs",
+    "domain_digit_ratio",
+    "cert_san_max",
+    "cert_first_seen_days",
+    "cert_issuer_diversity",
+    "cert_history_count",
+    "n_external_links_ratio",
+    "cert_has_wildcard",
+    "cert_validity_median_days",
+    "sn_pg_agreement",
+    "n_forms",
+    "cert_last_seen_days",
+    "has_ip_address",
+    "cert_is_free_only"
+  ],
+  "hidden_feats": [
+    "wayback_n_snapshots",
+    "wayback_first_status_ok",
+    "wayback_active_window_days",
+    "wayback_first_seen_days",
+    "wayback_last_seen_days",
+    "dns_resolved",
+    "asn_number",
+    "is_in_tranco_1m",
+    "tranco_rank",
+    "tranco_rank_log",
+    "asn_age_days"
+  ]
+}

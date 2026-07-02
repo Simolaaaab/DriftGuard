@@ -1,0 +1,225 @@
+{
+  "mode": "osint",
+  "core_features_kept": [
+    "min_prob",
+    "prob_pg",
+    "domain_length",
+    "domain_entropy",
+    "n_dots_domain",
+    "n_subdomains",
+    "html_length",
+    "sn_pg_diff",
+    "has_https",
+    "n_password_inputs",
+    "domain_digit_ratio",
+    "n_external_links_ratio",
+    "sn_pg_agreement",
+    "n_forms",
+    "has_ip_address"
+  ],
+  "osint_features_kept": [
+    "rdap_has_registrar",
+    "rdap_domain_age_days",
+    "rdap_age_risk",
+    "cert_san_max",
+    "cert_first_seen_days",
+    "cert_issuer_diversity",
+    "cert_history_count",
+    "cert_has_wildcard",
+    "cert_validity_median_days",
+    "cert_last_seen_days",
+    "cert_is_free_only"
+  ],
+  "rejected_features": [
+    {
+      "feature": "wayback_n_snapshots",
+      "reason": "gate-1: AUC_kp=0.9960 \u2265 0.99",
+      "AUC_kp": 0.9959809956373633,
+      "AUC_dp": 0.5042336890162977,
+      "AUC_pp": 0.914352986982921,
+      "gap": 0.4917473066210656
+    },
+    {
+      "feature": "wayback_first_status_ok",
+      "reason": "gate-1: AUC_kp=0.9937 \u2265 0.99",
+      "AUC_kp": 0.9937189686046214,
+      "AUC_dp": 0.5038342092689919,
+      "AUC_pp": 0.8459707036799293,
+      "gap": 0.48988475933562947
+    },
+    {
+      "feature": "wayback_active_window_days",
+      "reason": "gate-1: AUC_kp=0.9937 \u2265 0.99",
+      "AUC_kp": 0.9937078004293741,
+      "AUC_dp": 0.5004010913172404,
+      "AUC_pp": 0.8994620063349084,
+      "gap": 0.4933067091121337
+    },
+    {
+      "feature": "wayback_first_seen_days",
+      "reason": "gate-1: AUC_kp=0.9934 \u2265 0.99",
+      "AUC_kp": 0.9933860825277522,
+      "AUC_dp": 0.5024718638849073,
+      "AUC_pp": 0.9289209960468208,
+      "gap": 0.4909142186428449
+    },
+    {
+      "feature": "wayback_last_seen_days",
+      "reason": "gate-1: AUC_kp=0.9931 \u2265 0.99",
+      "AUC_kp": 0.9931041233300103,
+      "AUC_dp": 0.5017636262977877,
+      "AUC_pp": 0.8542426522429996,
+      "gap": 0.4913404970322226
+    },
+    {
+      "feature": "max_prob",
+      "reason": "gate-2: AUC_kp=0.9894 \u2265 0.95 \u2227 cross-dataset gap=0.485 > 0.4",
+      "AUC_kp": 0.9893726870709063,
+      "AUC_dp": 0.8019471556738638,
+      "AUC_pp": 0.5044385573526677,
+      "gap": 0.48493412971823857
+    },
+    {
+      "feature": "dns_resolved",
+      "reason": "gate-2: AUC_kp=0.9874 \u2265 0.95 \u2227 cross-dataset gap=0.482 > 0.4",
+      "AUC_kp": 0.9874022983211205,
+      "AUC_dp": 0.5053608399881693,
+      "AUC_pp": 0.609631971994514,
+      "gap": 0.4820414583329512
+    },
+    {
+      "feature": "asn_number",
+      "reason": "gate-2: AUC_kp=0.9872 \u2265 0.95 \u2227 cross-dataset gap=0.482 > 0.4",
+      "AUC_kp": 0.9871692060946271,
+      "AUC_dp": 0.5053549624978196,
+      "AUC_pp": 0.6655520946237463,
+      "gap": 0.48181424359680747
+    },
+    {
+      "feature": "prob_sn",
+      "reason": "gate-2: AUC_kp=0.9777 \u2265 0.95 \u2227 cross-dataset gap=0.465 > 0.4",
+      "AUC_kp": 0.9776662305949233,
+      "AUC_dp": 0.7607535321821036,
+      "AUC_pp": 0.5129093048788615,
+      "gap": 0.46475692571606175
+    },
+    {
+      "feature": "is_in_tranco_1m",
+      "reason": "gate-2: AUC_kp=0.9622 \u2265 0.95 \u2227 cross-dataset gap=0.461 > 0.4",
+      "AUC_kp": 0.9622186587746219,
+      "AUC_dp": 0.5008327076650059,
+      "AUC_pp": 0.6543512155938362,
+      "gap": 0.461385951109616
+    },
+    {
+      "feature": "tranco_rank",
+      "reason": "gate-2: AUC_kp=0.9622 \u2265 0.95 \u2227 cross-dataset gap=0.462 > 0.4",
+      "AUC_kp": 0.9622093023255813,
+      "AUC_dp": 0.5001335707081049,
+      "AUC_pp": 0.6546812025802649,
+      "gap": 0.4620757316174764
+    },
+    {
+      "feature": "tranco_rank_log",
+      "reason": "gate-2: AUC_kp=0.9622 \u2265 0.95 \u2227 cross-dataset gap=0.462 > 0.4",
+      "AUC_kp": 0.9622093023255813,
+      "AUC_dp": 0.5001335707081049,
+      "AUC_pp": 0.6546812025802649,
+      "gap": 0.4620757316174764
+    },
+    {
+      "feature": "asn_age_days",
+      "reason": "gate-2: AUC_kp=0.9619 \u2265 0.95 \u2227 cross-dataset gap=0.455 > 0.4",
+      "AUC_kp": 0.9619085805934242,
+      "AUC_dp": 0.5064748140058699,
+      "AUC_pp": 0.5747409562694896,
+      "gap": 0.4554337665875543
+    }
+  ],
+  "rejected_for_oracle_only": [
+    "wayback_n_snapshots",
+    "wayback_first_status_ok",
+    "wayback_active_window_days",
+    "wayback_first_seen_days",
+    "wayback_last_seen_days",
+    "dns_resolved",
+    "asn_number",
+    "is_in_tranco_1m",
+    "tranco_rank",
+    "tranco_rank_log",
+    "asn_age_days"
+  ],
+  "kp_only_features_dropped": [
+    "path_length",
+    "url_length",
+    "n_url_params"
+  ],
+  "final_feature_set": [
+    "min_prob",
+    "prob_pg",
+    "rdap_has_registrar",
+    "rdap_domain_age_days",
+    "rdap_age_risk",
+    "domain_length",
+    "domain_entropy",
+    "n_dots_domain",
+    "n_subdomains",
+    "html_length",
+    "sn_pg_diff",
+    "has_https",
+    "n_password_inputs",
+    "domain_digit_ratio",
+    "cert_san_max",
+    "cert_first_seen_days",
+    "cert_issuer_diversity",
+    "cert_history_count",
+    "n_external_links_ratio",
+    "cert_has_wildcard",
+    "cert_validity_median_days",
+    "sn_pg_agreement",
+    "n_forms",
+    "cert_last_seen_days",
+    "has_ip_address",
+    "cert_is_free_only"
+  ],
+  "kp_train_n": 7221,
+  "kp_test_n": 1806,
+  "dp_n": 6426,
+  "pp_n": 4777,
+  "gates": {
+    "gate_1_kp_alone_threshold": 0.99,
+    "gate_2_kp_floor": 0.95,
+    "gate_2_cross_dataset_gap_min": 0.4
+  },
+  "seed_train_means": {
+    "min_prob": 0.3844800941409916,
+    "prob_pg": 0.4324500607949037,
+    "rdap_has_registrar": -0.1571804459216175,
+    "rdap_domain_age_days": 3028.7536352305774,
+    "rdap_age_risk": -0.14928680238194156,
+    "domain_length": 17.319207865946545,
+    "domain_entropy": 3.356974345743693,
+    "n_dots_domain": 1.4182246226284447,
+    "n_subdomains": 0.4182246226284448,
+    "html_length": 240478.1632737848,
+    "sn_pg_diff": 0.18343701001232493,
+    "has_https": 0.8090292203295942,
+    "n_password_inputs": 0.6458939205096247,
+    "domain_digit_ratio": 0.0355003342668726,
+    "cert_san_max": 5.745464617089046,
+    "cert_first_seen_days": 2296.2247611134194,
+    "cert_issuer_diversity": 10.437612519041684,
+    "cert_history_count": 696.1978950283894,
+    "n_external_links_ratio": 2.637755979026289,
+    "cert_has_wildcard": -0.27932419332502423,
+    "cert_validity_median_days": 105.7317546046254,
+    "sn_pg_agreement": 0.9007062733693394,
+    "n_forms": 1.4186400775515857,
+    "cert_last_seen_days": 337.57415870378065,
+    "has_ip_address": 0.003185154410746434,
+    "cert_is_free_only": -0.5290126021326687
+  },
+  "seed": 2025,
+  "test_ratio": 0.2,
+  "cv_folds": 5
+}

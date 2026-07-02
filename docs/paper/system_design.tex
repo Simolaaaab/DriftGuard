@@ -1,0 +1,190 @@
+% =====================================================================
+%  DRIFTGUARD — Section III: System Design.
+%  Narrative rewrite (NOT a clean-up of reboot/docs/System_Design.tex).
+%  Facts/numbers sourced from the bible; prose written fresh, story-first.
+%  Method only; all measurements live in Section IV (\ref{sec:eval}) and
+%  the safety layer in Section V (\ref{sec:safety}).
+%
+%  FIGURE: needs an architecture diagram (figures/architecture.pdf).
+%  Placeholder included below — produce the diagram before submission.
+% =====================================================================
+
+\section{System Design}
+\label{sec:design}
+
+A phishing detector that must survive drift faces a tension. It has to answer
+in milliseconds at the edge, yet the knowledge it answers with goes stale in
+weeks. DRIFTGUARD resolves this by refusing to do everything in one place. A
+small, fast model gives the verdict; a separate, label-free signal decides
+\emph{when} the model has falle n behind; and only then, on a tight budget, a
+large language model is consulted to manufacture the few gold labels needed to
+bring the model back. The design mirrors how a security operations centre
+actually runs --- cheap automated triage in line, expensive expert judgement
+on demand --- and turns the LLM from an always-on dependency into a periodic
+recalibration tool (Figure~\ref{fig:arch}).
+
+Two principles run through the whole system and are worth stating up front.
+First, \emph{honesty before recovery}: before any adaptation, we sterilize the
+feature space of signals that look predictive only because of how the data was
+collected, so that the accuracy we later recover is real and not an artefact.
+Second, \emph{nothing informative is wasted}: the signals we forbid the model
+from using are not discarded but handed to the oracle, which can exploit
+contextually what a statistical model can only exploit as leakage. The rest of
+this section develops the three components in turn; the operational safety
+layer that wraps them is deferred to Section~\ref{sec:safety}.
+
+\begin{figure}[t]
+  \centering
+  % TODO: produce figures/architecture.pdf (edge model -> pool -> drift
+  % detector -> selection -> LLM oracle -> full-union retrain -> snapshot,
+  % with the safety layer auditing the oracle stream).
+  \includegraphics[width=\columnwidth]{figures/architecture.pdf}
+  \caption{DRIFTGUARD as a closed loop. The leakage-clean detector serves
+  instant verdicts at the edge and quietly buffers the samples it is unsure
+  about. A label-free monitor watches the \emph{input} distribution and, when
+  it has shifted enough, triggers a round: a small batch of uncertain,
+  drift-aligned samples is sent to the LLM oracle for gold labels, and the
+  detector is retrained on the full union of its seed corpus and every label
+  acquired so far. A safety layer (Section~\ref{sec:safety}) audits the oracle
+  stream throughout.}
+  \label{fig:arch}
+\end{figure}
+
+\subsection{A Leakage-Clean Detection Core}
+\label{ssec:core}
+
+The detector is a light meta-learner that sits on top of two existing,
+pre-trained phishing classifiers used as frozen \emph{proposers}: a graph
+neural network over the rendered DOM and a gradient-boosted model over HTML
+features. Neither is retrained inside the loop; each contributes a phishing
+probability and the two are combined with simple agreement features. On their
+own, the proposers are brittle --- under temporal drift the DOM-structure
+signal essentially collapses to chance --- which is precisely why we do not
+trust them blindly and instead ground the verdict in evidence they do not see.
+
+That evidence comes from a \emph{passive OSINT measurement layer}. For every
+page we measure the lifecycle of its domain from free, key-less public sources:
+its popularity (the Tranco list), its archival history (the Wayback Machine),
+its certificates (Certificate Transparency logs), its registration record
+(RDAP), and its DNS and network footprint. We deliberately restrict ourselves
+to sources that carry no label leakage by construction --- popularity,
+archival, registration, routing --- and exclude anything correlated with the
+phishing ground truth, such as blocklists, from the model's feature space. The
+result is a few dozen factual lifecycle measurements per page, alongside the
+proposer opinions and a handful of URL and HTML features.
+
+The methodological centrepiece is what happens next. Many of these features are
+strongly predictive on the training corpus yet betray the model under drift,
+and the reason is subtle: a feature like ``number of Wayback snapshots''
+separates the classes almost perfectly on historical data not because it
+distinguishes phishing from benign, but because the historical phishing domains
+are now \emph{dead} and therefore unarchived --- it measures ``alive versus
+dead'', a temporal accident, not the phenomenon we care about. We catch such
+features with a single statistical rule: any feature whose single-feature
+discriminative power is suspiciously high on the training set \emph{and}
+inconsistent across datasets is rejected as leakage. The same rule, applied
+uniformly, turns out to catch two failures of completely different nature --
+the temporally leaky OSINT signals \emph{and} the proposers' own
+near-perfect-but-non-transferable probabilities --- under one criterion. We
+quantify exactly which features it removes, and what that does to
+cross-distribution accuracy, in Section~\ref{ssec:eval-gate}.
+
+Crucially, a rejected feature is removed from the \emph{model}, not from the
+\emph{system}: the gated-out lifecycle signals are preserved and forwarded to
+the oracle, where contextual reasoning can use them safely. On the sterilized
+feature space we deploy a logistic-regression detector. It starts from a
+high-precision, low-recall operating point --- the pages it calls phishing are
+almost always phishing, but under drift it misses many --- and those misses are
+exactly the region the self-repair loop is built to recover.
+
+\subsection{An LLM Oracle for Gold Labels}
+\label{ssec:oracle}
+
+When the loop needs a label it cannot get for free, it asks a large language
+model. The oracle's job is narrow but demanding: given everything we know about
+a single page, return a verdict reliable enough to retrain on. We give it three
+complementary views of the page. The first is the cleaned HTML --- stripped of
+styling and binary blobs but keeping the forensic markers (hidden fields,
+password inputs, form targets, inline scripts) a verdict actually turns on. The
+second is the OSINT dossier, including the very lifecycle signals the leakage
+gate removed from the model: presented as plain facts (``domain registered 207
+days ago; never archived; certificate rotated every 90 days''), they let the
+oracle reason about throwaway phishing infrastructure that the statistical
+model was rightly forbidden from exploiting. The third, when useful, is the
+proposers' opinions, framed as advice rather than truth.
+
+We ask the oracle to reason in fixed steps and to commit to a decision rather
+than hedge, and we require it to list both the indicators it found and the
+checks that came up empty. This last requirement is not cosmetic: the two
+parallel lists are what later lets a verifier check each claim against the page,
+turning an opaque verdict into an auditable one (Section~\ref{sec:safety}). The
+output is a single structured record, robust to malformed generations, with the
+verdict drawn from a closed taxonomy so that downstream analysis can reason
+about \emph{why} a page was flagged, not just whether. Which combination of
+evidence makes the best oracle is itself an empirical question, settled in
+Section~\ref{ssec:eval-oracle}.
+
+\subsection{The Self-Repair Loop}
+\label{ssec:loop}
+
+The loop ties the detector and the oracle together and is where the
+``self-repair'' claim is earned. It must answer three questions without ever
+seeing a ground-truth label at runtime: when has the model fallen behind, which
+handful of pages are worth a costly oracle call, and how to fold the answers
+back in without forgetting what the model already knew.
+
+\paragraph{When: watching the input, not the confidence.}
+The instinctive drift signal --- the model losing confidence on new data --- is
+the wrong one here, and for an instructive reason. A leakage-clean,
+well-calibrated detector does \emph{not} get hesitant under drift; it stays
+confident and is simply wrong, making confident mistakes on inputs it has never
+seen. Any trigger that waits for confidence to collapse therefore waits
+forever. DRIFTGUARD instead measures the shift in the \emph{input}
+distribution: it compares the running distribution of the model's predictions
+against a reference taken at deployment, and fires when that divergence grows.
+We keep this timing mechanism deliberately simple --- in most runs, a scheduled
+batching policy --- precisely so that the gains we report can be attributed to
+\emph{which} samples we label rather than to a bespoke trigger. The operational
+consequences of this choice, including the cost of reacting late, are measured
+in Section~\ref{ssec:eval-delay}.
+
+\paragraph{Which: spending the budget where the drift is.}
+When a round fires, the detector quietly maintains a pool of the samples it was
+uncertain about, and we must pick a small batch to label. Classical active
+learning picks the most uncertain points; but ``uncertain'' is defined relative
+to the current model, blind to \emph{where the data has actually moved}. Our
+selector, \emph{drift-anchored} sampling, corrects this. It scores a candidate
+by its boundary uncertainty, then up-weights it by how far it has drifted from
+the training distribution along the dimensions that have drifted most:
+\[
+s(x) \;=\; \underbrace{\frac{1}{|p(x)-0.5|+\epsilon}}_{\text{uncertainty}}
+\;\cdot\;
+\Big(1 + \alpha \textstyle\sum_i \delta_i\,|x_i-\mu_i|\Big),
+\]
+where $\delta_i$ is the measured per-feature drift and $\mu_i$ the training
+mean. The effect is to spend labels on pages that are both hard \emph{and}
+explanatory of the observed shift, degrading gracefully to plain uncertainty
+sampling when nothing has drifted. We benchmark it against the standard active-
+learning strategies, and surface where it helps and where it trades off, in
+Section~\ref{ssec:eval-recovery}; the single weight $\alpha$ is shown not to
+matter in Section~\ref{ssec:eval-alpha}.
+
+\paragraph{How: retraining without forgetting.}
+Each round, the detector is refit from scratch on the \emph{full union} of its
+original corpus and every label acquired so far. This is the blunt but reliable
+guarantee against catastrophic forgetting: because all of the original evidence
+is re-presented at every fit, recovery on the drifted distribution cannot come
+at the price of the original one --- a claim we verify rather than assume
+(Section~\ref{ssec:eval-recovery}). The feature scaler, fit once at deployment,
+is frozen for the life of the run, since re-estimating it on a few dozen new
+samples each round would induce far more coefficient drift than it removes.
+After each retrain the uncertainty pool is re-scored under the new model, so
+pages that have become easy graduate out and the pool stays aligned with the
+model's \emph{current} blind spots.
+
+\medskip\noindent
+This is the whole loop: an honest baseline, a contextual oracle fed the very
+signals the baseline could not safely use, and a budgeted, drift-aware
+acquisition cycle that retrains without forgetting. What we have not yet
+addressed is how to run it safely when the oracle is an LLM and no ground truth
+is available to check it --- the subject of Section~\ref{sec:safety}.

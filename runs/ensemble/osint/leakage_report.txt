@@ -1,0 +1,73 @@
+=== Step 1 leakage gate report ===
+Mode: osint
+Gate 1 (in-distribution): AUC_kp ≥ 0.99
+Gate 2 (temporal):        AUC_kp ≥ 0.95 ∧ cross-dataset gap > 0.4
+
+Rejected (13):
+  wayback_n_snapshots
+    gate-1: AUC_kp=0.9960 ≥ 0.99
+    AUC_kp=0.9960  AUC_dp=0.5042  AUC_pp=0.9144  gap=0.4917
+  wayback_first_status_ok
+    gate-1: AUC_kp=0.9937 ≥ 0.99
+    AUC_kp=0.9937  AUC_dp=0.5038  AUC_pp=0.8460  gap=0.4899
+  wayback_active_window_days
+    gate-1: AUC_kp=0.9937 ≥ 0.99
+    AUC_kp=0.9937  AUC_dp=0.5004  AUC_pp=0.8995  gap=0.4933
+  wayback_first_seen_days
+    gate-1: AUC_kp=0.9934 ≥ 0.99
+    AUC_kp=0.9934  AUC_dp=0.5025  AUC_pp=0.9289  gap=0.4909
+  wayback_last_seen_days
+    gate-1: AUC_kp=0.9931 ≥ 0.99
+    AUC_kp=0.9931  AUC_dp=0.5018  AUC_pp=0.8542  gap=0.4913
+  max_prob
+    gate-2: AUC_kp=0.9894 ≥ 0.95 ∧ cross-dataset gap=0.485 > 0.4
+    AUC_kp=0.9894  AUC_dp=0.8019  AUC_pp=0.5044  gap=0.4849
+  dns_resolved
+    gate-2: AUC_kp=0.9874 ≥ 0.95 ∧ cross-dataset gap=0.482 > 0.4
+    AUC_kp=0.9874  AUC_dp=0.5054  AUC_pp=0.6096  gap=0.4820
+  asn_number
+    gate-2: AUC_kp=0.9872 ≥ 0.95 ∧ cross-dataset gap=0.482 > 0.4
+    AUC_kp=0.9872  AUC_dp=0.5054  AUC_pp=0.6656  gap=0.4818
+  prob_sn
+    gate-2: AUC_kp=0.9777 ≥ 0.95 ∧ cross-dataset gap=0.465 > 0.4
+    AUC_kp=0.9777  AUC_dp=0.7608  AUC_pp=0.5129  gap=0.4648
+  is_in_tranco_1m
+    gate-2: AUC_kp=0.9622 ≥ 0.95 ∧ cross-dataset gap=0.461 > 0.4
+    AUC_kp=0.9622  AUC_dp=0.5008  AUC_pp=0.6544  gap=0.4614
+  tranco_rank
+    gate-2: AUC_kp=0.9622 ≥ 0.95 ∧ cross-dataset gap=0.462 > 0.4
+    AUC_kp=0.9622  AUC_dp=0.5001  AUC_pp=0.6547  gap=0.4621
+  tranco_rank_log
+    gate-2: AUC_kp=0.9622 ≥ 0.95 ∧ cross-dataset gap=0.462 > 0.4
+    AUC_kp=0.9622  AUC_dp=0.5001  AUC_pp=0.6547  gap=0.4621
+  asn_age_days
+    gate-2: AUC_kp=0.9619 ≥ 0.95 ∧ cross-dataset gap=0.455 > 0.4
+    AUC_kp=0.9619  AUC_dp=0.5065  AUC_pp=0.5747  gap=0.4554
+
+Kept (26):
+  min_prob  AUC_kp=0.9821  AUC_dp=0.9784  AUC_pp=0.8575
+  prob_pg  AUC_kp=0.9759  AUC_dp=0.9865  AUC_pp=0.8634
+  rdap_has_registrar  AUC_kp=0.8853  AUC_dp=0.5035  AUC_pp=0.6234
+  rdap_domain_age_days  AUC_kp=0.8844  AUC_dp=0.5033  AUC_pp=0.8593
+  rdap_age_risk  AUC_kp=0.8844  AUC_dp=0.5038  AUC_pp=0.5009
+  domain_length  AUC_kp=0.8749  AUC_dp=0.5056  AUC_pp=0.6983
+  domain_entropy  AUC_kp=0.8293  AUC_dp=0.5027  AUC_pp=0.7284
+  n_dots_domain  AUC_kp=0.8141  AUC_dp=0.5003  AUC_pp=0.5204
+  n_subdomains  AUC_kp=0.8141  AUC_dp=0.5003  AUC_pp=0.5204
+  html_length  AUC_kp=0.7805  AUC_dp=0.6890  AUC_pp=0.8343
+  sn_pg_diff  AUC_kp=0.7314  AUC_dp=0.8060  AUC_pp=0.7865
+  has_https  AUC_kp=0.7112  AUC_dp=0.5012  AUC_pp=0.5706
+  n_password_inputs  AUC_kp=0.6643  AUC_dp=0.8532  AUC_pp=0.5091
+  domain_digit_ratio  AUC_kp=0.6416  AUC_dp=0.5008  AUC_pp=0.6075
+  cert_san_max  AUC_kp=0.5812  AUC_dp=0.5072  AUC_pp=0.5885
+  cert_first_seen_days  AUC_kp=0.5774  AUC_dp=0.5071  AUC_pp=0.6455
+  cert_issuer_diversity  AUC_kp=0.5732  AUC_dp=0.5082  AUC_pp=0.6042
+  cert_history_count  AUC_kp=0.5710  AUC_dp=0.5084  AUC_pp=0.6033
+  n_external_links_ratio  AUC_kp=0.5707  AUC_dp=0.5506  AUC_pp=0.5418
+  cert_has_wildcard  AUC_kp=0.5527  AUC_dp=0.5069  AUC_pp=0.5820
+  cert_validity_median_days  AUC_kp=0.5354  AUC_dp=0.5079  AUC_pp=0.6187
+  sn_pg_agreement  AUC_kp=0.5327  AUC_dp=0.6581  AUC_pp=0.6835
+  n_forms  AUC_kp=0.5323  AUC_dp=0.5638  AUC_pp=0.7182
+  cert_last_seen_days  AUC_kp=0.5153  AUC_dp=0.5100  AUC_pp=0.6061
+  has_ip_address  AUC_kp=0.5037  AUC_dp=0.5003  AUC_pp=0.5021
+  cert_is_free_only  AUC_kp=0.5025  AUC_dp=0.5087  AUC_pp=0.5796
