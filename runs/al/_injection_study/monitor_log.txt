@@ -1,0 +1,66 @@
+
+===== NAIVE injection @ 50% =====
+  R01 parse=0.500 skew=1.0000 yield=0.500 n_crit=2 verdict=critical halt=False | parse_ok=0.50 CRIT(threshold=0.8) ; class_skew=1.00 CRIT(threshold=0.99) ; yield=0.50 warn(threshold=0.7)
+  R02 parse=0.500 skew=1.0000 yield=0.500 n_crit=2 verdict=critical halt=True | parse_ok=0.50 CRIT(threshold=0.8) ; class_skew=1.00 CRIT(threshold=0.99) ; yield=0.50 warn(threshold=0.7)
+  -> HALT at round 2
+
+===== NAIVE injection @ 100% =====
+  R01 parse=0.000 skew=1.0000 yield=0.000 n_crit=3 verdict=critical halt=False | parse_ok=0.00 CRIT(threshold=0.8) ; class_skew=1.00 CRIT(threshold=0.99) ; yield=0.00 CRIT(threshold=0.5)
+  R02 parse=0.000 skew=1.0000 yield=0.000 n_crit=3 verdict=critical halt=True | parse_ok=0.00 CRIT(threshold=0.8) ; class_skew=1.00 CRIT(threshold=0.99) ; yield=0.00 CRIT(threshold=0.5)
+  -> HALT at round 2
+
+===== SMART injection @ 50% =====
+  R01 parse=1.000 skew=1.0000 yield=1.000 n_crit=1 verdict=warn halt=False | class_skew=1.00 CRIT(threshold=0.99)
+  R02 parse=1.000 skew=1.0000 yield=1.000 n_crit=1 verdict=warn halt=False | class_skew=1.00 CRIT(threshold=0.99)
+  R03 parse=1.000 skew=1.0000 yield=1.000 n_crit=1 verdict=warn halt=False | class_skew=1.00 CRIT(threshold=0.99)
+  R04 parse=1.000 skew=0.9800 yield=1.000 n_crit=0 verdict=healthy halt=False | class_skew=0.98 warn(threshold=0.9)
+  R05 parse=1.000 skew=1.0000 yield=1.000 n_crit=1 verdict=warn halt=False | class_skew=1.00 CRIT(threshold=0.99)
+  R06 parse=1.000 skew=1.0000 yield=1.000 n_crit=1 verdict=warn halt=False | class_skew=1.00 CRIT(threshold=0.99)
+  R07 parse=1.000 skew=0.9800 yield=1.000 n_crit=0 verdict=healthy halt=False | class_skew=0.98 warn(threshold=0.9)
+  R08 parse=1.000 skew=0.9600 yield=1.000 n_crit=0 verdict=healthy halt=False | class_skew=0.96 warn(threshold=0.9)
+  R09 parse=1.000 skew=1.0000 yield=1.000 n_crit=1 verdict=warn halt=False | class_skew=1.00 CRIT(threshold=0.99)
+  R10 parse=1.000 skew=0.9400 yield=1.000 n_crit=0 verdict=healthy halt=False | class_skew=0.94 warn(threshold=0.9)
+  R11 parse=1.000 skew=0.9600 yield=1.000 n_crit=0 verdict=healthy halt=False | class_skew=0.96 warn(threshold=0.9)
+  R12 parse=1.000 skew=0.9200 yield=1.000 n_crit=0 verdict=healthy halt=False | class_skew=0.92 warn(threshold=0.9)
+  R13 parse=1.000 skew=0.9800 yield=1.000 n_crit=0 verdict=healthy halt=False | class_skew=0.98 warn(threshold=0.9)
+  R14 parse=1.000 skew=0.9600 yield=1.000 n_crit=0 verdict=healthy halt=False | class_skew=0.96 warn(threshold=0.9)
+  R15 parse=1.000 skew=0.9796 yield=1.000 n_crit=0 verdict=healthy halt=False | class_skew=0.98 warn(threshold=0.9)
+  R16 parse=1.000 skew=0.9200 yield=1.000 n_crit=0 verdict=healthy halt=False | class_skew=0.92 warn(threshold=0.9)
+  R17 parse=1.000 skew=0.9184 yield=1.000 n_crit=0 verdict=healthy halt=False | class_skew=0.92 warn(threshold=0.9)
+  R18 parse=1.000 skew=0.9200 yield=1.000 n_crit=0 verdict=healthy halt=False | class_skew=0.92 warn(threshold=0.9)
+  R19 parse=1.000 skew=0.7400 yield=1.000 n_crit=0 verdict=healthy halt=False | ok
+  R20 parse=1.000 skew=0.7800 yield=1.000 n_crit=0 verdict=healthy halt=False | ok
+  R21 parse=1.000 skew=0.8000 yield=1.000 n_crit=0 verdict=healthy halt=False | ok
+  R22 parse=1.000 skew=0.8400 yield=1.000 n_crit=0 verdict=healthy halt=False | ok
+  R23 parse=1.000 skew=0.7200 yield=1.000 n_crit=0 verdict=healthy halt=False | ok
+  R24 parse=1.000 skew=0.6400 yield=1.000 n_crit=0 verdict=healthy halt=False | ok
+  R25 parse=1.000 skew=0.8000 yield=1.000 n_crit=0 verdict=healthy halt=False | ok
+  -> NEVER HALTED
+
+===== SMART injection @ 100% =====
+  R01 parse=1.000 skew=1.0000 yield=1.000 n_crit=1 verdict=warn halt=False | class_skew=1.00 CRIT(threshold=0.99)
+  R02 parse=1.000 skew=1.0000 yield=1.000 n_crit=1 verdict=warn halt=False | class_skew=1.00 CRIT(threshold=0.99)
+  R03 parse=1.000 skew=1.0000 yield=1.000 n_crit=1 verdict=warn halt=False | class_skew=1.00 CRIT(threshold=0.99)
+  R04 parse=1.000 skew=1.0000 yield=1.000 n_crit=1 verdict=warn halt=False | class_skew=1.00 CRIT(threshold=0.99)
+  R05 parse=1.000 skew=1.0000 yield=1.000 n_crit=1 verdict=warn halt=False | class_skew=1.00 CRIT(threshold=0.99)
+  R06 parse=1.000 skew=1.0000 yield=1.000 n_crit=1 verdict=warn halt=False | class_skew=1.00 CRIT(threshold=0.99)
+  R07 parse=1.000 skew=1.0000 yield=1.000 n_crit=1 verdict=warn halt=False | class_skew=1.00 CRIT(threshold=0.99)
+  R08 parse=1.000 skew=1.0000 yield=1.000 n_crit=1 verdict=warn halt=False | class_skew=1.00 CRIT(threshold=0.99)
+  R09 parse=1.000 skew=1.0000 yield=1.000 n_crit=1 verdict=warn halt=False | class_skew=1.00 CRIT(threshold=0.99)
+  R10 parse=1.000 skew=1.0000 yield=1.000 n_crit=1 verdict=warn halt=False | class_skew=1.00 CRIT(threshold=0.99)
+  R11 parse=1.000 skew=1.0000 yield=1.000 n_crit=1 verdict=warn halt=False | class_skew=1.00 CRIT(threshold=0.99)
+  R12 parse=1.000 skew=1.0000 yield=1.000 n_crit=1 verdict=warn halt=False | class_skew=1.00 CRIT(threshold=0.99)
+  R13 parse=1.000 skew=1.0000 yield=1.000 n_crit=1 verdict=warn halt=False | class_skew=1.00 CRIT(threshold=0.99)
+  R14 parse=1.000 skew=1.0000 yield=1.000 n_crit=1 verdict=warn halt=False | class_skew=1.00 CRIT(threshold=0.99)
+  R15 parse=1.000 skew=1.0000 yield=1.000 n_crit=1 verdict=warn halt=False | class_skew=1.00 CRIT(threshold=0.99)
+  R16 parse=1.000 skew=1.0000 yield=1.000 n_crit=1 verdict=warn halt=False | class_skew=1.00 CRIT(threshold=0.99)
+  R17 parse=1.000 skew=1.0000 yield=1.000 n_crit=1 verdict=warn halt=False | class_skew=1.00 CRIT(threshold=0.99)
+  R18 parse=1.000 skew=1.0000 yield=1.000 n_crit=1 verdict=warn halt=False | class_skew=1.00 CRIT(threshold=0.99)
+  R19 parse=1.000 skew=1.0000 yield=1.000 n_crit=1 verdict=warn halt=False | class_skew=1.00 CRIT(threshold=0.99)
+  R20 parse=1.000 skew=1.0000 yield=1.000 n_crit=1 verdict=warn halt=False | class_skew=1.00 CRIT(threshold=0.99)
+  R21 parse=1.000 skew=1.0000 yield=1.000 n_crit=1 verdict=warn halt=False | class_skew=1.00 CRIT(threshold=0.99)
+  R22 parse=1.000 skew=1.0000 yield=1.000 n_crit=1 verdict=warn halt=False | class_skew=1.00 CRIT(threshold=0.99)
+  R23 parse=1.000 skew=1.0000 yield=1.000 n_crit=1 verdict=warn halt=False | class_skew=1.00 CRIT(threshold=0.99)
+  R24 parse=1.000 skew=1.0000 yield=1.000 n_crit=1 verdict=warn halt=False | class_skew=1.00 CRIT(threshold=0.99)
+  R25 parse=1.000 skew=1.0000 yield=1.000 n_crit=1 verdict=warn halt=False | class_skew=1.00 CRIT(threshold=0.99)
+  -> NEVER HALTED

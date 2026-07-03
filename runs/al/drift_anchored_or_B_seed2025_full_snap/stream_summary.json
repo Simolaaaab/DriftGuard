@@ -1,0 +1,22 @@
+{
+  "run_id": "drift_anchored_or_B_seed2025_full_snap",
+  "drift_mode": "or",
+  "strategy": "drift_anchored",
+  "stream_len": 3821,
+  "n_fires": 2,
+  "first_fire_row": 429,
+  "last_fire_row": 529,
+  "total_phish_in_stream": 1865,
+  "total_benign_in_stream": 1956,
+  "cum_FN_total": 1178,
+  "cum_FP_total": 119,
+  "cum_errors_total": 1297,
+  "stream_recall_phish": 0.3683646112600536,
+  "stream_f1w": 0.6294257641099998,
+  "stream_recall_phish_sklearn": 0.3683646112600536,
+  "area_under_1_minus_f1w_w200": 1217.415061671557,
+  "final_pp_test_f1w": 0.6200450358859128,
+  "label_calls": 100,
+  "probe_calls": 0,
+  "total_llm_calls": 100
+}

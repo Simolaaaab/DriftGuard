@@ -1,0 +1,28 @@
+{
+  "variants": [
+    "NAIVE",
+    "SMART"
+  ],
+  "injected_fractions": [
+    0.5,
+    1.0
+  ],
+  "seed": 2025,
+  "stream_segment": "drift_anchored_llm_periodic_temporal_B canonical batches (25 rounds, K=50)",
+  "experiment_mode": "replay of real canonical batches with real DeepSeek (source==llm) labels for non-injected samples; injected-sample oracle OUTPUT modeled per variant definition (NAIVE=malformed/unparseable, SMART=schema-valid flipped-benign). Tests the HealthMonitor's response to these output patterns. Live-DeepSeek injection validation pending credentials.",
+  "monitor_thresholds": {
+    "parse_ok": [
+      0.8,
+      0.95
+    ],
+    "class_skew": [
+      0.99,
+      0.9
+    ],
+    "yield": [
+      0.5,
+      0.7
+    ]
+  },
+  "halt_rule": ">=2 simultaneous CRITICAL signals OR 3 consecutive rounds with parse_ok<0.95"
+}

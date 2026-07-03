@@ -1,0 +1,22 @@
+{
+  "run_id": "drift_anchored_kl_guided_abs_lar_w200_B_seed2025_full_snap",
+  "drift_mode": "kl_guided_lar",
+  "strategy": "drift_anchored",
+  "stream_len": 3821,
+  "n_fires": 6,
+  "first_fire_row": 399,
+  "last_fire_row": 3799,
+  "total_phish_in_stream": 1865,
+  "total_benign_in_stream": 1956,
+  "cum_FN_total": 1145,
+  "cum_FP_total": 111,
+  "cum_errors_total": 1256,
+  "stream_recall_phish": 0.386058981233244,
+  "stream_f1w": 0.6426146943269672,
+  "stream_recall_phish_sklearn": 0.38605898123324395,
+  "area_under_1_minus_f1w_w200": 1178.2253900472833,
+  "final_pp_test_f1w": 0.6572131570397958,
+  "label_calls": 300,
+  "probe_calls": 190,
+  "total_llm_calls": 490
+}

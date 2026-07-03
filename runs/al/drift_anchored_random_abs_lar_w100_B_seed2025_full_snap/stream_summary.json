@@ -1,0 +1,22 @@
+{
+  "run_id": "drift_anchored_random_abs_lar_w100_B_seed2025_full_snap",
+  "drift_mode": "random_lar",
+  "strategy": "drift_anchored",
+  "stream_len": 3821,
+  "n_fires": 17,
+  "first_fire_row": 299,
+  "last_fire_row": 3699,
+  "total_phish_in_stream": 1865,
+  "total_benign_in_stream": 1956,
+  "cum_FN_total": 1070,
+  "cum_FP_total": 99,
+  "cum_errors_total": 1169,
+  "stream_recall_phish": 0.42627345844504017,
+  "stream_f1w": 0.6706415246104998,
+  "stream_recall_phish_sklearn": 0.4262734584450402,
+  "area_under_1_minus_f1w_w200": 1103.3432283642799,
+  "final_pp_test_f1w": 0.7643498298743769,
+  "label_calls": 850,
+  "probe_calls": 380,
+  "total_llm_calls": 1230
+}

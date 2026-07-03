@@ -1,0 +1,17 @@
+===== SMART injection @ 100% (LIVE) =====
+  R01 parse=1.000 skew=0.5400 yield=1.000 n_crit=0 verdict=healthy halt=False | ok
+  R02 parse=1.000 skew=0.7600 yield=1.000 n_crit=0 verdict=healthy halt=False | ok
+  R03 parse=0.980 skew=0.6735 yield=0.980 n_crit=0 verdict=healthy halt=False | ok
+  R04 parse=1.000 skew=0.8200 yield=1.000 n_crit=0 verdict=healthy halt=False | ok
+  R05 parse=1.000 skew=0.9200 yield=1.000 n_crit=0 verdict=healthy halt=False | class_skew=0.92 warn(threshold=0.9)
+  R06 parse=1.000 skew=0.8400 yield=1.000 n_crit=0 verdict=healthy halt=False | ok
+  R07 parse=1.000 skew=0.8200 yield=1.000 n_crit=0 verdict=healthy halt=False | ok
+  R08 parse=0.980 skew=0.7551 yield=0.980 n_crit=0 verdict=healthy halt=False | ok
+  R09 parse=1.000 skew=0.7400 yield=1.000 n_crit=0 verdict=healthy halt=False | ok
+  R10 parse=0.980 skew=0.5306 yield=0.980 n_crit=0 verdict=healthy halt=False | ok
+  R11 parse=0.980 skew=0.7959 yield=0.980 n_crit=0 verdict=healthy halt=False | ok
+  R12 parse=0.960 skew=0.7917 yield=0.960 n_crit=0 verdict=healthy halt=False | ok
+  R13 parse=0.960 skew=0.6458 yield=0.960 n_crit=0 verdict=healthy halt=False | ok
+  R14 parse=0.980 skew=0.5714 yield=0.980 n_crit=0 verdict=healthy halt=False | ok
+  R15 parse=0.980 skew=0.5510 yield=0.980 n_crit=0 verdict=healthy halt=False | ok
+  -> NEVER HALTED

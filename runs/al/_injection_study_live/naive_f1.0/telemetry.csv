@@ -1,0 +1,4 @@
+variant,fraction,round,parse_ok_rate,class_skew,yield_rate,n_critical_signals,round_verdict,halted,halt_round
+naive,1.0,1,1.0,0.6,1.0,0,healthy,False,
+naive,1.0,2,1.0,0.6,1.0,0,healthy,False,
+naive,1.0,3,1.0,0.75,1.0,0,healthy,False,

@@ -1,0 +1,5 @@
+variant,fraction,round,parse_ok_rate,class_skew,yield_rate,n_critical_signals,round_verdict,halted,halt_round
+NAIVE,0.5,1,0.5,1.0,0.5,2,critical,False,
+NAIVE,0.5,2,0.5,1.0,0.5,2,critical,True,2
+NAIVE,1.0,1,0.0,1.0,0.0,3,critical,False,
+NAIVE,1.0,2,0.0,1.0,0.0,3,critical,True,2

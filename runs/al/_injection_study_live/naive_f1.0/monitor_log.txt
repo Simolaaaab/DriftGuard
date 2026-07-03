@@ -1,0 +1,5 @@
+===== NAIVE injection @ 100% (LIVE) =====
+  R01 parse=1.000 skew=0.6000 yield=1.000 n_crit=0 verdict=healthy halt=False | ok
+  R02 parse=1.000 skew=0.6000 yield=1.000 n_crit=0 verdict=healthy halt=False | ok
+  R03 parse=1.000 skew=0.7500 yield=1.000 n_crit=0 verdict=healthy halt=False | ok
+  -> NEVER HALTED

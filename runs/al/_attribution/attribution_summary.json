@@ -1,0 +1,27 @@
+{
+  "n_verdicts": 4534,
+  "n_with_top_factors": 4485,
+  "pct_cite_HIDDEN": 67.17948717948718,
+  "pct_cite_SEMANTIC": 75.96432552954292,
+  "pct_cite_model_blind": 92.70903010033445,
+  "pct_only_model_blind": 3.58974358974359,
+  "pct_cite_SHARED_OSINT": 78.32775919732441,
+  "pct_cite_HTML_STRUCT": 57.525083612040135,
+  "pct_cite_PROPOSER": 27.17948717948718,
+  "by_correctness": {
+    "llm_correct": {
+      "n": 3448,
+      "pct_HIDDEN": 68.9385150812065,
+      "pct_SEMANTIC": 79.98839907192576,
+      "pct_model_blind": 94.63457076566125,
+      "pct_only_blind": 4.060324825986079
+    },
+    "llm_wrong": {
+      "n": 1035,
+      "pct_HIDDEN": 61.25603864734299,
+      "pct_SEMANTIC": 62.70531400966184,
+      "pct_model_blind": 86.28019323671498,
+      "pct_only_blind": 2.0289855072463765
+    }
+  }
+}
