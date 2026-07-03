@@ -23,7 +23,6 @@ step2_oracle/       LLM-oracle prompt ablation (variants A–E) on hard FN/FP sa
 step3_al/           The active-learning loop: pool, drift detector, selection,
                     oracle, class-aware verifier, retrain — plus cited analyses
 step5_smallbench/   Multi-LLM oracle benchmark (6 providers) + health-monitor study
-figures/            Figure generators + rendered PDFs/PNGs
 
 datasets/           Base Z-matrices (KP / DP / PP) + source JSON
 runs/osint/         OSINT-enriched Z-matrices (the state the AL loop consumes)
@@ -33,7 +32,6 @@ runs/al/_aggregate/     Headline tables, learning curves, Pareto data, paper fig
 runs/al/_clean_shared_cache/   Shared oracle cache — replay every run, no API key
 runs/al/drift_anchored_B_seed2025/   One canonical run as a worked example
 
-docs/paper/         LaTeX sources + bibliography
 ```
 
 ## Datasets
