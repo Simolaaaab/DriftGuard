@@ -1,7 +1,6 @@
-# DRIFTGUARD — Label-Free Self-Repair of Phishing Detectors under Drift
+# DRIFTGUARD — Self-Repair for Phishing Detection using LLM-Guided Active Learning
 
-Artifact accompanying the WTMC submission *"DRIFTGUARD: Label-Free Self-Repair of
-Phishing Detectors under Drift via LLM-Guided Active Learning."*
+Artifact accompanying the paper “DRIFTGUARD: Self-Repair for Phishing Detection using LLM-Guided Active Learning,” accepted at the 11th International Workshop on Traffic Measurements for Cybersecurity (WTMC 2026).
 
 DRIFTGUARD is a closed-loop phishing detector that repairs itself under temporal
 concept drift with **no human labels** and a small, predictable LLM budget. A
